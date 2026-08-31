@@ -11,6 +11,7 @@ import {
 test('FindPitches hosts are recognized without changing legacy host behavior', () => {
   assert.equal(isFindPitchesHost('findpitches.com'), true);
   assert.equal(isFindPitchesHost('www.findpitches.com'), true);
+  assert.equal(isFindPitchesHost('findpitches-web.pages.dev'), true);
   assert.equal(isFindPitchesHost('pitchlist.uk'), false);
 });
 

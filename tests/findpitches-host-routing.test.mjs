@@ -43,6 +43,36 @@ test('FindPitches finder maps to the isolated US finder asset', async () => {
   assert.equal(fixture.nextCalls(), 0);
 });
 
+test('Pages review hostname uses the public FindPitches routing contract', async () => {
+  const home = contextFor('https://findpitches-web.pages.dev/');
+  const homeResponse = await onRequest(home.context);
+  assert.equal(homeResponse.status, 200);
+  assert.deepEqual(home.assetRequests, ['/us/']);
+  assert.equal(home.nextCalls(), 0);
+
+  const finder = contextFor('https://findpitches-web.pages.dev/find-pitches');
+  const finderResponse = await onRequest(finder.context);
+  assert.equal(finderResponse.status, 200);
+  assert.deepEqual(finder.assetRequests, ['/us/find-pitches']);
+  assert.equal(finder.nextCalls(), 0);
+
+  const preview = contextFor('https://findpitches-web.pages.dev/preview/uk/');
+  const previewResponse = await onRequest(preview.context);
+  assert.equal(previewResponse.status, 200);
+  assert.equal(previewResponse.headers.get('x-robots-tag'), 'noindex, nofollow');
+  assert.deepEqual(preview.assetRequests, ['/uk/']);
+  assert.equal(preview.nextCalls(), 0);
+
+  for (const path of ['/uk/', '/us/', '/us/find-pitches']) {
+    const blocked = contextFor(`https://findpitches-web.pages.dev${path}`);
+    const blockedResponse = await onRequest(blocked.context);
+    assert.equal(blockedResponse.status, 404);
+    assert.equal(blockedResponse.headers.get('x-robots-tag'), 'noindex');
+    assert.deepEqual(blocked.assetRequests, []);
+    assert.equal(blocked.nextCalls(), 0);
+  }
+});
+
 test('FindPitches API and shared assets pass through to existing handlers', async () => {
   for (const path of ['/api/us-customer-opportunities/search', '/assets/hero-food-festival.jpg', '/shared/findpitches-shell.css', '/uk/home.css', '/us/home.css', '/us/find-pitches.css', '/us/find-pitches.js']) {
     const fixture = contextFor(`https://findpitches.com${path}`);

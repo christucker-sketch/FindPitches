@@ -1,6 +1,10 @@
 import { getCountry } from './countries.mjs';
 
-const FINDPITCHES_HOSTS = new Set(['findpitches.com', 'www.findpitches.com']);
+const FINDPITCHES_HOSTS = new Set([
+  'findpitches.com',
+  'www.findpitches.com',
+  'findpitches-web.pages.dev'
+]);
 const LEGACY_COUNTRY_HOSTS = new Map([
   ['pitchlist.uk', 'uk'],
   ['www.pitchlist.uk', 'uk']
