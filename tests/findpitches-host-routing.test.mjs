@@ -43,33 +43,39 @@ test('FindPitches finder maps to the isolated US finder asset', async () => {
   assert.equal(fixture.nextCalls(), 0);
 });
 
-test('Pages review hostname uses the public FindPitches routing contract', async () => {
-  const home = contextFor('https://findpitches-web.pages.dev/');
-  const homeResponse = await onRequest(home.context);
-  assert.equal(homeResponse.status, 200);
-  assert.deepEqual(home.assetRequests, ['/us/']);
-  assert.equal(home.nextCalls(), 0);
+test('Pages production and preview hostnames use the public FindPitches routing contract', async () => {
+  for (const hostname of [
+    'findpitches-web.pages.dev',
+    '82d99783.findpitches-web.pages.dev',
+    'fix-routing.findpitches-web.pages.dev'
+  ]) {
+    const home = contextFor(`https://${hostname}/`);
+    const homeResponse = await onRequest(home.context);
+    assert.equal(homeResponse.status, 200, hostname);
+    assert.deepEqual(home.assetRequests, ['/us/'], hostname);
+    assert.equal(home.nextCalls(), 0, hostname);
 
-  const finder = contextFor('https://findpitches-web.pages.dev/find-pitches');
-  const finderResponse = await onRequest(finder.context);
-  assert.equal(finderResponse.status, 200);
-  assert.deepEqual(finder.assetRequests, ['/us/find-pitches']);
-  assert.equal(finder.nextCalls(), 0);
+    const finder = contextFor(`https://${hostname}/find-pitches`);
+    const finderResponse = await onRequest(finder.context);
+    assert.equal(finderResponse.status, 200, hostname);
+    assert.deepEqual(finder.assetRequests, ['/us/find-pitches'], hostname);
+    assert.equal(finder.nextCalls(), 0, hostname);
 
-  const preview = contextFor('https://findpitches-web.pages.dev/preview/uk/');
-  const previewResponse = await onRequest(preview.context);
-  assert.equal(previewResponse.status, 200);
-  assert.equal(previewResponse.headers.get('x-robots-tag'), 'noindex, nofollow');
-  assert.deepEqual(preview.assetRequests, ['/uk/']);
-  assert.equal(preview.nextCalls(), 0);
+    const preview = contextFor(`https://${hostname}/preview/uk/`);
+    const previewResponse = await onRequest(preview.context);
+    assert.equal(previewResponse.status, 200, hostname);
+    assert.equal(previewResponse.headers.get('x-robots-tag'), 'noindex, nofollow', hostname);
+    assert.deepEqual(preview.assetRequests, ['/uk/'], hostname);
+    assert.equal(preview.nextCalls(), 0, hostname);
 
-  for (const path of ['/uk/', '/us/', '/us/find-pitches']) {
-    const blocked = contextFor(`https://findpitches-web.pages.dev${path}`);
-    const blockedResponse = await onRequest(blocked.context);
-    assert.equal(blockedResponse.status, 404);
-    assert.equal(blockedResponse.headers.get('x-robots-tag'), 'noindex');
-    assert.deepEqual(blocked.assetRequests, []);
-    assert.equal(blocked.nextCalls(), 0);
+    for (const path of ['/uk/', '/us/', '/us/find-pitches']) {
+      const blocked = contextFor(`https://${hostname}${path}`);
+      const blockedResponse = await onRequest(blocked.context);
+      assert.equal(blockedResponse.status, 404, `${hostname}${path}`);
+      assert.equal(blockedResponse.headers.get('x-robots-tag'), 'noindex', `${hostname}${path}`);
+      assert.deepEqual(blocked.assetRequests, [], `${hostname}${path}`);
+      assert.equal(blocked.nextCalls(), 0, `${hostname}${path}`);
+    }
   }
 });
 
