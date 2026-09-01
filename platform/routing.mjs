@@ -5,6 +5,7 @@ const FINDPITCHES_HOSTS = new Set([
   'www.findpitches.com',
   'findpitches-web.pages.dev'
 ]);
+const FINDPITCHES_PAGES_SUFFIX = '.findpitches-web.pages.dev';
 const LEGACY_COUNTRY_HOSTS = new Map([
   ['pitchlist.uk', 'uk'],
   ['www.pitchlist.uk', 'uk']
@@ -20,7 +21,8 @@ function normalizePathname(pathname) {
 }
 
 export function isFindPitchesHost(hostname) {
-  return FINDPITCHES_HOSTS.has(normalizeHostname(hostname));
+  const host = normalizeHostname(hostname);
+  return FINDPITCHES_HOSTS.has(host) || host.endsWith(FINDPITCHES_PAGES_SUFFIX);
 }
 
 export function legacyCountryForHost(hostname) {
@@ -40,7 +42,7 @@ export function resolveCountryRequest({ hostname, pathname = '/' } = {}) {
   const host = normalizeHostname(hostname);
   const path = normalizePathname(pathname);
 
-  if (FINDPITCHES_HOSTS.has(host)) {
+  if (isFindPitchesHost(host)) {
     const pathCountryCode = countryCodeFromPath(path);
     if (pathCountryCode) {
       return Object.freeze({

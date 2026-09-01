@@ -9,10 +9,25 @@ import {
 } from '../platform/routing.mjs';
 
 test('FindPitches hosts are recognized without changing legacy host behavior', () => {
-  assert.equal(isFindPitchesHost('findpitches.com'), true);
-  assert.equal(isFindPitchesHost('www.findpitches.com'), true);
-  assert.equal(isFindPitchesHost('findpitches-web.pages.dev'), true);
-  assert.equal(isFindPitchesHost('pitchlist.uk'), false);
+  for (const hostname of [
+    'findpitches.com',
+    'www.findpitches.com',
+    'findpitches-web.pages.dev',
+    '82d99783.findpitches-web.pages.dev',
+    'fix-routing.findpitches-web.pages.dev'
+  ]) {
+    assert.equal(isFindPitchesHost(hostname), true, hostname);
+  }
+
+  for (const hostname of [
+    'pitchlist.uk',
+    'unrelated-project.pages.dev',
+    'findpitches-web.pages.dev.example.com',
+    'evilfindpitches-web.pages.dev',
+    'findpitches-web.pages.dev.evil.com'
+  ]) {
+    assert.equal(isFindPitchesHost(hostname), false, hostname);
+  }
 });
 
 test('legacy domains resolve to their existing country context', () => {
